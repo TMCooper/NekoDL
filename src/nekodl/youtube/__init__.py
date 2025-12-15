@@ -1,6 +1,6 @@
 # youtube/__init__.py 
 
-from .downloader import download
+from .download import download
 from .fetch import fetch_info
 from .info import (
     get_title,
