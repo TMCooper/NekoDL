@@ -1,5 +1,5 @@
 from .fetch import fetch_info
-from .downloader import download
+from .download import download
 from .utils import Utils
 from .info import (
     get_title,
