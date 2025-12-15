@@ -1,25 +1,23 @@
 [project]
 name = "NekoDL"
-version = "0.1.9"
+version = "0.1.10"
 description = "Unified media downloader (YouTube, TikTok, AnimeSama)"
 readme = "README.md"
-authors = [{ name = "TMCooper" }]
-license = { text = "MIT" }
 requires-python = ">=3.11"
-
-dependencies = [
-    "yt-dlp",
-    "spotdl",
-    "requests"
-]
+dependencies = [ "yt-dlp", "spotdl", "requests",]
+[[project.authors]]
+name = "TMCooper"
 
 [build-system]
-requires = ["setuptools"]
+requires = [ "setuptools",]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package-dir = { "" = "src" }
+[project.license]
+text = "MIT"
+
+[tool.setuptools.package-dir]
+"" = "src"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["nekodl*"]
+where = [ "src",]
+include = [ "nekodl*",]
