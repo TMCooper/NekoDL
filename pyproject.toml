@@ -1,6 +1,6 @@
 [project]
 name = "NekoDL"
-version = "0.1.7"
+version = "0.1.8"
 description = "Unified media downloader (YouTube, TikTok, AnimeSama)"
 readme = "README.md"
 authors = [{ name = "TMCooper" }]
