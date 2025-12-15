@@ -28,6 +28,12 @@ To install the pakage you can simply do this :
 pip install nekodl
 ```
 
+## Update pakage
+To update nekodl you can do :
+```bash
+pip install --upgrade nekodl
+```
+
 ## Thanks to : 
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - [spotdl](https://github.com/spotDL/spotify-downloader)
