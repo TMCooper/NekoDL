@@ -15,17 +15,6 @@ def download(url, *, quality="bv*+ba/b", PATH=None, cookies_path=None):
 
         cleanLogger = YuiCleanLogger()
 
-        # ydl_opts = {
-        #     "outtmpl": os.path.join(PATH, "%(title)s.%(ext)s"),             # Dossier et nom fichier            
-        #     "format": quality,                                              # bv* = meilleure vidéo / ba = meilleur audio
-        #     "merge_output_format": "mp4",                                   # Passe la video en mp4 automatiquement
-        #     "ignoreerrors": True,                                           # Evite les erreur non critique pour continuer malgré tous
-        #     "quiet": True,                                                  # Evite la saturation du terminal
-        #     "verbose": False,                                               # Evite les log inutile
-        #     "logger": cleanLogger,                                          # Logger sépcifique
-        #     "progress_hooks": [cleanLogger.hook],                           # Progresse bar spécifique
-        # }
-
         ydl_opts = Utils.get_ydl_opts(
             output_path=PATH,
             quality=quality,
