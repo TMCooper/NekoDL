@@ -1,6 +1,6 @@
 import os, subprocess
 
-def downloader(URL, *, PATH=None):
+def download(URL, *, PATH=None):
     """Téléchargement Spotify"""
     try:
         if not PATH:
