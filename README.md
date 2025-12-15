@@ -1,5 +1,6 @@
 # NekoDL
 >[!IMPORTANT]
+>You need to install ffmpeg
 
 ## Prerequisites
 
@@ -20,3 +21,13 @@ choco install ffmpeg
 If FFmpeg is not installed, NekoDL will still work, but in limited mode:
 - No audio/video merging
 - Potentially reduced quality
+
+## Installation
+To install the pakage you can simply do this :
+```bash
+pip install nekodl
+```
+
+## Thanks to : 
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [spotdl](https://github.com/spotDL/spotify-downloader)
