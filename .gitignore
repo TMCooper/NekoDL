@@ -3,3 +3,5 @@ tests
 __pycache__
 .vscode
 NekoDL.egg-info
+dist
+.env
