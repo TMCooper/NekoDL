@@ -1,1 +1,1 @@
-from . import youtube, tiktok, animesama, core, bilibili
+from . import youtube, tiktok, animesama, core, bilibili, spotify
