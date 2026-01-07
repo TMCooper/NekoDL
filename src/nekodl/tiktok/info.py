@@ -2,7 +2,7 @@ from ..core.core import Info
 
 def get_title(info):
     """
-    Returns the title of the YouTube video.
+    Returns the title of the Tiktok video.
 
     Can be None if the information is missing or extraction failed.
     """
@@ -74,7 +74,7 @@ def get_formats(info):
 
 def get_id(info):
     """
-    Returns the unique ID of the YouTube video.
+    Returns the unique ID of the Tiktok video.
     """
     return Info._get_id(info)
 
@@ -102,6 +102,6 @@ def get_timestamp(info):
 
 def get_url(info):
     """
-    Returns the URL of the YouTube video.
+    Returns the URL of the Tiktok video.
     """
     return Info._get_url(info)
