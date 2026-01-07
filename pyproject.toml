@@ -1,10 +1,10 @@
 [project]
 name = "NekoDL"
-version = "0.1.11"
+version = "0.2.0"
 description = "Unified media downloader (YouTube, TikTok, AnimeSama)"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [ "yt-dlp", "spotdl", "requests",]
+dependencies = [ "yt-dlp", "spotdl", "requests", "cloudscraper"]
 [[project.authors]]
 name = "TMCooper"
 
