@@ -39,7 +39,7 @@ def download(url, folder_name="AnimeSama_Download", *, quality="best", PATH=None
             "progress_hooks": [cleanLogger.hook],                       # Pour un affichage personnalisé de la progression
             'verbose': False,                                           # Afficher moins d'informationsyt-dl
             'http_headers': {
-                'Referer': url, # Toujours envoyer le Referer !
+                'Referer': url,                                         # Toujours envoyer le Referer !
                 'User-Agent': custom_headers['User-Agent'],
                 }
             }
