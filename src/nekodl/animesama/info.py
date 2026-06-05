@@ -102,6 +102,59 @@ def get_timestamp(info):
 
 def get_url(info):
     """
-    Returns the URL of the YouTube video.
+    Returns the URL of the AnimeSama video.
     """
     return Info._get_url(info)
+
+def get_anime_metadata(anime_url):
+    """
+    Scrapes the Anime-Sama anime page to extract basic metadata.
+    Returns a dictionary with 'title', 'synopsis', and 'cover_url'.
+    """
+    import cloudscraper
+    from bs4 import BeautifulSoup
+    
+    scraper = cloudscraper.create_scraper()
+    response = scraper.get(anime_url)
+    if response.status_code != 200:
+        return {"title": None, "synopsis": None, "cover_url": None}
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Title extraction (from the main heading or title tag)
+    title_tag = soup.find('h1') or soup.find('h2')
+    title = title_tag.get_text(strip=True) if title_tag else None
+    if not title and soup.title:
+        title = soup.title.get_text(strip=True).replace(" - Anime-Sama", "")
+
+    # Synopsis extraction (Anime-Sama usually uses paragraphs or specific divs)
+    synopsis = None
+    synopsis_elem = soup.find(lambda tag: tag.name in ['p', 'div'] and tag.get('class') and any('synopsis' in c.lower() for c in tag.get('class')))
+    if synopsis_elem:
+        synopsis = synopsis_elem.get_text(strip=True)
+    
+    # Cover image extraction
+    cover_url = None
+    cover_elem = soup.find('img', class_=lambda c: c and 'cover' in c.lower())
+    if not cover_elem:
+        # Fallback to the largest or first prominent image
+        img_tags = soup.find_all('img')
+        for img in img_tags:
+            src = img.get('src', '')
+            if 'cover' in src.lower() or 'affiche' in src.lower():
+                cover_url = src
+                break
+    else:
+        cover_url = cover_elem.get('src')
+        
+    if cover_url and not cover_url.startswith('http'):
+        from urllib.parse import urlparse
+        parsed = urlparse(anime_url)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        cover_url = base_url.rstrip("/") + "/" + cover_url.lstrip("/")
+
+    return {
+        "title": title,
+        "synopsis": synopsis,
+        "cover_url": cover_url
+    }
