@@ -97,6 +97,43 @@ def _download_raw(url, path, quality="best", headers=None, slot_index=None, tota
         return None
 
 
+def _resolve_episode(episodes_dict, ep_index, allowed_sites=None):
+    """
+    Try to resolve a working direct URL for a single episode by iterating
+    across all available players (eps1, eps2, eps3, ...).
+    Returns a dict {"url": ..., "type": ..., "headers": ...} or None.
+    """
+    if allowed_sites is None:
+        allowed_sites = [
+            "vidmoly.to", "vidmoly.net",
+            "smoothpre.com", "vidhide.com", "streamwish.com",
+            "sendvid.com"
+        ]
+
+    players = sorted(episodes_dict.keys(), key=lambda k: int(k.replace("eps", "")))
+
+    for player in players:
+        ep_list = episodes_dict[player]
+        if ep_index >= len(ep_list):
+            continue
+
+        ep_url = ep_list[ep_index]
+
+        # Check if URL belongs to an allowed site
+        is_allowed = any(site in ep_url.lower() for site in allowed_sites)
+        if not is_allowed:
+            continue
+
+        try:
+            resolved = resolve_video_url(ep_url)
+            if resolved and resolved.get("url"):
+                return resolved
+        except Exception:
+            continue
+
+    return None
+
+
 def _prepare_download_tasks(anime_url, season=None, episode=None, path=None):
     metadata = get_anime_metadata(anime_url)
     anime_name = metadata.get("title") or "Unknown_Anime"
@@ -126,8 +163,9 @@ def _prepare_download_tasks(anime_url, season=None, episode=None, path=None):
     if not episodes_dict:
         raise ValueError("No episodes found.")
 
-    player = list(episodes_dict.keys())[0]
-    episodes_list = episodes_dict[player]
+    # Determine episode count from the first player
+    first_player = sorted(episodes_dict.keys(), key=lambda k: int(k.replace("eps", "")))[0]
+    num_episodes = len(episodes_dict[first_player])
 
     tasks = []
     if episode is not None:
@@ -136,26 +174,27 @@ def _prepare_download_tasks(anime_url, season=None, episode=None, path=None):
         elif isinstance(episode, list):
             ep_indices = [e - 1 for e in episode]
         else:
-            ep_indices = range(len(episodes_list))
+            ep_indices = range(num_episodes)
     else:
-        ep_indices = range(len(episodes_list))
+        ep_indices = range(num_episodes)
 
     base_path = path or os.path.join(os.getcwd(), "anime", anime_name, season_name)
 
     for i in ep_indices:
-        if 0 <= i < len(episodes_list):
-            ep_url = episodes_list[i]
-            resolved = resolve_video_url(ep_url)
-            final_url = resolved["url"]
+        if 0 <= i < num_episodes:
+            resolved = _resolve_episode(episodes_dict, i)
+            if resolved:
+                final_url = resolved["url"]
             
-            ep_filename = f"ep{i+1}.mp4"
-            final_path = os.path.join(base_path, ep_filename)
-            
-            tasks.append({
-                "url": final_url,
-                "path": final_path,
-                "ep_number": i + 1
-            })
+                ep_filename = f"ep{i+1}.mp4"
+                final_path = os.path.join(base_path, ep_filename)
+                
+                tasks.append({
+                    "url": final_url,
+                    "path": final_path,
+                    "ep_number": i + 1,
+                    "headers": resolved.get("headers"),
+                })
 
     return tasks
 
@@ -171,9 +210,10 @@ def download(anime_url, season=None, episode=None, path=None, quality="best", he
     """
     tasks = _prepare_download_tasks(anime_url, season, episode, path)
     for task in tasks:
-        # Ensure directory exists
+        # Merge resolver-specific headers with user-provided headers
+        dl_headers = {**(headers or {}), **(task.get("headers") or {})}
         os.makedirs(os.path.dirname(task["path"]), exist_ok=True)
-        _download_raw(task["url"], task["path"], quality=quality, headers=headers)
+        _download_raw(task["url"], task["path"], quality=quality, headers=dl_headers or None)
 
 
 def download_many(anime_url, season=None, episode=None, path=None, quality="best", headers=None, max_workers=4):
@@ -195,12 +235,13 @@ def download_many(anime_url, season=None, episode=None, path=None, quality="best
     def _worker(dl_task):
         slot = download_slots.get()
         try:
+            dl_headers = {**(headers or {}), **(dl_task.get("headers") or {})}
             os.makedirs(os.path.dirname(dl_task["path"]), exist_ok=True)
             _download_raw(
                 url=dl_task["url"], 
                 path=dl_task["path"], 
                 quality=quality, 
-                headers=headers, 
+                headers=dl_headers or None, 
                 slot_index=slot, 
                 total_slots=max_workers
             )

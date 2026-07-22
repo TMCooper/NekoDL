@@ -20,7 +20,7 @@ def get_base_url(status_url="https://anime-sama.pw"):
             domains_js = match.group(1)
             
             # Extract each domain with regex
-            domain_pattern = r"name:\s*'([^']+)'"
+            domain_pattern = r"name:\s*['\"]([^'\"]+)['\"]"
             domains = re.findall(domain_pattern, domains_js)
             
             for domain in domains:
@@ -32,10 +32,11 @@ def get_base_url(status_url="https://anime-sama.pw"):
                     # If status code is 200, it's the main active domain
                     if response_no_redirect.status_code == 200:
                         return url
-                except requests.exceptions.RequestException:
+                except Exception:
                     pass
-    except requests.exceptions.RequestException:
+    except Exception:
         pass
     
     # Fallback to a known domain if resolution fails
-    return "https://anime-sama.me"
+    return "https://anime-sama.to"
+

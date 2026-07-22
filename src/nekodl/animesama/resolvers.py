@@ -74,7 +74,7 @@ def resolve_smoothpre(url):
 
 def resolve_sendvid(url):
     """
-    SendVid resolver. Extracts MP4 URL from <source> or og:video.
+    SendVid resolver. Extracts MP4 URL from <source>, og:video, or video_source JS variable.
     """
     try:
         r = scraper.get(url, headers={**HEADERS, "Referer": "https://sendvid.com/"}, timeout=10)
@@ -83,11 +83,39 @@ def resolve_sendvid(url):
              match = re.search(r'property="og:video"\s+content="([^"]+)"', r.text)
         if not match:
              match = re.search(r'property="og:video:url"\s+content="([^"]+)"', r.text)
+        if not match:
+             match = re.search(r'var\s+video_source\s*=\s*["\']([^"\']+)["\']', r.text)
              
         if match:
             video_url = match.group(1)
             if video_url.startswith("//"): video_url = "https:" + video_url
-            return {"url": video_url, "type": "mp4"}
+            return {
+                "url": video_url,
+                "type": "mp4",
+                "headers": {"Referer": "https://sendvid.com/"}
+            }
+    except:
+        pass
+    return None
+
+def resolve_sibnet(url):
+    """
+    Sibnet resolver. Extracts direct MP4 URL from player JS.
+    Requires Referer: https://video.sibnet.ru/ header for downloading.
+    """
+    try:
+        r = scraper.get(url, headers={**HEADERS, "Referer": "https://video.sibnet.ru/"}, timeout=8)
+        match = re.search(r'player\.src\(\s*\[\s*\{\s*src:\s*["\']([^"\']+)["\']', r.text)
+        if not match:
+            match = re.search(r'src:\s*["\'](/v/[^"\']+\.mp4[^"\']*)["\']', r.text)
+        if match:
+            video_path = match.group(1)
+            video_url = "https://video.sibnet.ru" + video_path if video_path.startswith('/') else video_path
+            return {
+                "url": video_url,
+                "type": "mp4",
+                "headers": {"Referer": "https://video.sibnet.ru/"}
+            }
     except:
         pass
     return None
@@ -101,6 +129,8 @@ RESOLVER_MAP = {
     "vidhide.com": resolve_smoothpre,
     "streamwish.com": resolve_smoothpre,
     "sendvid.com": resolve_sendvid,
+    "video.sibnet.ru": resolve_sibnet,
+    "sibnet.ru": resolve_sibnet,
 }
 
 def resolve_video_url(url):
@@ -113,3 +143,4 @@ def resolve_video_url(url):
     if resolver:
         return resolver(url)
     return {"url": url, "type": "raw"}
+
