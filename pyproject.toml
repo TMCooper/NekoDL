@@ -1,6 +1,6 @@
 [project]
 name = "NekoDL"
-version = "0.2.4"
+version = "0.2.5"
 description = "Unified media downloader (YouTube, TikTok, AnimeSama)"
 readme = "README.md"
 requires-python = ">=3.11"
