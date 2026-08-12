@@ -19,11 +19,21 @@ from .info import (
 )
 from .utils import get_base_url
 from .episodes import get_seasons, get_episode_links
-from .resolvers import resolve_video_url, resolve_vidmoly, resolve_sendvid, resolve_smoothpre
+from .resolvers import (
+    resolve_video_url,
+    resolve_vidmoly,
+    resolve_sendvid,
+    resolve_smoothpre,
+    resolve_sibnet,
+    resolve_ansembed,
+    resolve_embed4me,
+)
 from .scans import (
     get_scan_info,
     get_scan_links,
     download_scans,
     download_scans_many,
 )
+from .search import search_anime, fetch_catalog
+
 

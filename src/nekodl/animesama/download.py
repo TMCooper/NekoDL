@@ -105,9 +105,14 @@ def _resolve_episode(episodes_dict, ep_index, allowed_sites=None):
     """
     if allowed_sites is None:
         allowed_sites = [
-            "vidmoly.to", "vidmoly.net",
-            "smoothpre.com", "vidhide.com", "streamwish.com",
-            "sendvid.com"
+            "sibnet.ru", "video.sibnet.ru",
+            "embed4me.com", "lpayer.embed4me.com", "player.embed4me.com",
+            "ansembed.net", "ansembed.com",
+            "vidmoly.to", "vidmoly.net", "vidmoly.me",
+            "smoothpre.com", "vidhide.com", "vidhidepro.com",
+            "streamwish.com", "streamwish.to",
+            "sendvid.com", "oneupload.to", "oneupload.net",
+            "filemoon.sx", "filemoon.to", "vidoza.net"
         ]
 
     players = sorted(episodes_dict.keys(), key=lambda k: int(k.replace("eps", "")))

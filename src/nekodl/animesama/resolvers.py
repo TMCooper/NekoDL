@@ -101,18 +101,35 @@ def resolve_sendvid(url):
 def resolve_sibnet(url):
     """
     Sibnet resolver. Extracts direct MP4 URL from player JS.
+    Follows 302 redirect to obtain the final direct CDN video URL.
     Requires Referer: https://video.sibnet.ru/ header for downloading.
     """
     try:
-        r = scraper.get(url, headers={**HEADERS, "Referer": "https://video.sibnet.ru/"}, timeout=8)
-        match = re.search(r'player\.src\(\s*\[\s*\{\s*src:\s*["\']([^"\']+)["\']', r.text)
+        r = scraper.get(url, headers={**HEADERS, "Referer": "https://video.sibnet.ru/"}, timeout=10)
+        match = re.search(r'player\.src\(\s*\[\s*\{\s*src:\s*["\'](/v/[^"\']+)["\']', r.text)
         if not match:
-            match = re.search(r'src:\s*["\'](/v/[^"\']+\.mp4[^"\']*)["\']', r.text)
+            match = re.search(r'["\'](/v/[^"\']+\.mp4[^"\']*)["\']', r.text)
         if match:
             video_path = match.group(1)
-            video_url = "https://video.sibnet.ru" + video_path if video_path.startswith('/') else video_path
+            v_url = "https://video.sibnet.ru" + video_path if video_path.startswith('/') else video_path
+            
+            # Follow 302 redirect with Referer to obtain final direct CDN video link
+            r_302 = scraper.get(v_url, headers={**HEADERS, "Referer": "https://video.sibnet.ru/"}, allow_redirects=False, timeout=10)
+            loc = r_302.headers.get("Location")
+            if loc:
+                if loc.startswith("//"):
+                    cdn_url = "https:" + loc
+                elif loc.startswith("/"):
+                    cdn_url = "https://video.sibnet.ru" + loc
+                else:
+                    cdn_url = loc
+                return {
+                    "url": cdn_url,
+                    "type": "mp4",
+                    "headers": {"Referer": "https://video.sibnet.ru/"}
+                }
             return {
-                "url": video_url,
+                "url": v_url,
                 "type": "mp4",
                 "headers": {"Referer": "https://video.sibnet.ru/"}
             }
@@ -120,17 +137,46 @@ def resolve_sibnet(url):
         pass
     return None
 
+def resolve_ansembed(url):
+    """
+    Ansembed / Movembed resolver. Extracts m3u8 playlist URL from player page.
+    """
+    try:
+        r = scraper.get(url, headers={**HEADERS, "Referer": url}, timeout=10)
+        match = re.search(r'file\s*:\s*["\'](https?://[^"\']+\.m3u8[^"\']*)["\']', r.text)
+        if not match:
+            match = re.search(r'["\'](https?://[^"\']+\.m3u8[^"\']*)["\']', r.text)
+        if match:
+            return {"url": match.group(1), "type": "m3u8"}
+    except:
+        pass
+    return None
+
+def resolve_embed4me(url):
+    """
+    Embed4me / Lplayer resolver. Validates embed4me URLs for playback.
+    """
+    return {"url": url, "type": "embed"}
+
 #  Dispatcher
 
 RESOLVER_MAP = {
-    "vidmoly.to": resolve_vidmoly,
-    "vidmoly.net": resolve_vidmoly,
-    "smoothpre.com": resolve_smoothpre,
-    "vidhide.com": resolve_smoothpre,
-    "streamwish.com": resolve_smoothpre,
-    "sendvid.com": resolve_sendvid,
     "video.sibnet.ru": resolve_sibnet,
     "sibnet.ru": resolve_sibnet,
+    "ansembed.net": resolve_ansembed,
+    "ansembed.com": resolve_ansembed,
+    "lpayer.embed4me.com": resolve_embed4me,
+    "embed4me.com": resolve_embed4me,
+    "player.embed4me.com": resolve_embed4me,
+    "vidmoly.to": resolve_vidmoly,
+    "vidmoly.net": resolve_vidmoly,
+    "vidmoly.me": resolve_vidmoly,
+    "smoothpre.com": resolve_smoothpre,
+    "vidhide.com": resolve_smoothpre,
+    "vidhidepro.com": resolve_smoothpre,
+    "streamwish.com": resolve_smoothpre,
+    "streamwish.to": resolve_smoothpre,
+    "sendvid.com": resolve_sendvid,
 }
 
 def resolve_video_url(url):
@@ -143,4 +189,5 @@ def resolve_video_url(url):
     if resolver:
         return resolver(url)
     return {"url": url, "type": "raw"}
+
 

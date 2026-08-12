@@ -8,6 +8,8 @@ from urllib.parse import quote
 import cloudscraper
 from bs4 import BeautifulSoup
 
+from .utils import get_base_url
+
 print_lock = threading.Lock()
 
 def resolve_manga_title(anime_url_or_title: str) -> str:
@@ -16,6 +18,7 @@ def resolve_manga_title(anime_url_or_title: str) -> str:
     Accepts either an Anime-Sama URL or a title string.
     """
     scraper = cloudscraper.create_scraper()
+    base_url = get_base_url()
     
     if anime_url_or_title.startswith("http://") or anime_url_or_title.startswith("https://"):
         url = anime_url_or_title
@@ -31,7 +34,7 @@ def resolve_manga_title(anime_url_or_title: str) -> str:
         match = re.search(r'/catalogue/([^/]+)', url)
         if match:
             slug = match.group(1)
-            cat_url = f"https://anime-sama.to/catalogue/{slug}/"
+            cat_url = f"{base_url}/catalogue/{slug}/"
             cat_resp = scraper.get(cat_url)
             if cat_resp.status_code == 200:
                 soup = BeautifulSoup(cat_resp.text, 'html.parser')
@@ -43,13 +46,13 @@ def resolve_manga_title(anime_url_or_title: str) -> str:
     else:
         # Check if the title directly yields scan info from AnimeSama API endpoint
         title = anime_url_or_title.strip()
-        chk_url = f"https://anime-sama.to/s2/scans/get_nb_chap_et_img.php?oeuvre={quote(title)}"
+        chk_url = f"{base_url}/s2/scans/get_nb_chap_et_img.php?oeuvre={quote(title)}"
         resp = scraper.get(chk_url)
         if resp.status_code == 200 and resp.text.startswith('{'):
             return title
         
         # Fallback to catalogue slug lookup
-        cat_url = f"https://anime-sama.to/catalogue/{title.lower().replace(' ', '-')}/"
+        cat_url = f"{base_url}/catalogue/{title.lower().replace(' ', '-')}/"
         cat_resp = scraper.get(cat_url)
         if cat_resp.status_code == 200:
             soup = BeautifulSoup(cat_resp.text, 'html.parser')
@@ -67,8 +70,9 @@ def get_scan_info(anime_url_or_title: str) -> dict:
     """
     title = resolve_manga_title(anime_url_or_title)
     scraper = cloudscraper.create_scraper()
+    base_url = get_base_url()
     
-    endpoint = f"https://anime-sama.to/s2/scans/get_nb_chap_et_img.php?oeuvre={quote(title)}"
+    endpoint = f"{base_url}/s2/scans/get_nb_chap_et_img.php?oeuvre={quote(title)}"
     resp = scraper.get(endpoint)
     
     if resp.status_code != 200:
@@ -102,6 +106,7 @@ def get_scan_links(anime_url_or_title: str, chapter=None) -> dict:
     scan_info = get_scan_info(anime_url_or_title)
     title = scan_info["title"]
     chapters_dict = scan_info["chapters"]
+    base_url = get_base_url()
 
     if chapter is None or chapter == "all":
         target_chaps = list(chapters_dict.keys())
@@ -114,6 +119,8 @@ def get_scan_links(anime_url_or_title: str, chapter=None) -> dict:
     else:
         target_chaps = list(chapters_dict.keys())
 
+    encoded_title = quote(title).replace(" ", "%20")
+
     links_dict = {}
     for chap in target_chaps:
         if chap in chapters_dict:
@@ -121,7 +128,7 @@ def get_scan_links(anime_url_or_title: str, chapter=None) -> dict:
             chap_key = f"Chapitre {chap}"
             img_urls = []
             for page in range(1, nb_pages + 1):
-                url = f"https://anime-sama.to/s2/scans/{quote(title)}/{chap}/{page}.jpg"
+                url = f"{base_url}/s2/scans/{encoded_title}/{chap}/{page}.jpg"
                 img_urls.append(url)
             links_dict[chap_key] = img_urls
 

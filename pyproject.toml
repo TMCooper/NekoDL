@@ -4,7 +4,11 @@ version = "0.2.5"
 description = "Unified media downloader (YouTube, TikTok, AnimeSama)"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [ "yt-dlp", "spotdl", "requests", "cloudscraper",]
+dependencies = [ "yt-dlp", "spotdl", "requests", "cloudscraper", "rapidfuzz",]
+
+[project.optional-dependencies]
+test = [ "pytest",]
+
 [[project.authors]]
 name = "TMCooper"
 
